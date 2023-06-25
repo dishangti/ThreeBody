@@ -56,8 +56,8 @@ struct Body {
 	R3 s, v;
 	double m;
 
-	inline bool operator==(Body s1) {
-		R3 ds = this->s - s1.s;
+	inline bool operator==(const Body &s1) {
+		R3 &&ds = this->s - s1.s;
 		double dis = sqrt(ds * ds);
 		return dis <= MIN_DIS;
 	}
@@ -75,7 +75,7 @@ R3 a_func(R3 p, int except)
 	for (int i = 0; i < n; i++) {
 		if (i == except) continue;
 
-		R3 ds = star[i].s - p;
+		R3 &&ds = star[i].s - p;
 		double ds2 = ds * ds;
 		double dis = sqrt(ds2);
 		ds *= G / (ds2 * dis);
@@ -111,25 +111,25 @@ bool is_crashed()
 	return false;
 }
 
-R3 RK4_s(R3 &x0, R3 &v0, R3 &acc)
+R3 RK4_ds(R3 &v0, R3 &acc)
 // Order-4 Runge-Kutta method for position
 {
-	R3 a_per2 = acc * per2;
+	R3 &&a_per2 = acc * per2;
+							
+	R3 &&k2 = v0 + v0 * per2 + a_per2;		// k1 = v0
+	R3 &&k3 = v0 + k2 * per2 + a_per2;		// v1 = v0 + a * dt
+	R3 &&k4 = v0 + k3 * per + acc * per;
 
-	R3 k1 = v0 * 1;							// v1 = v0 + a * dt
-	R3 k2 = v0 + k1 * per2 + a_per2;
-	R3 k3 = v0 + k2 * per2 + a_per2;
-	R3 k4 = v0 + k3 * per + acc * per;
-
-	return x0 + (k1 + k2 * 2 + k3 * 2 + k4) * (per / 6);
+	return (v0 + k2 * 2 + k3 * 2 + k4) * (per / 6);
 }
 
 void update()
 {
 	for (int i = 0; i < n; i++) {
-		R3 acc = a_func(star[i].s, i);	// Assume "acc" is a constant during each interval
-		star[i].s = RK4_s(star[i].s, star[i].v, acc);
-		star[i].v += acc * per;
+		Body &st = star[i];
+		R3 &&acc = a_func(st.s, i);	// Assume "acc" is a constant during each interval
+		st.s = st.s + RK4_ds(st.v, acc);
+		st.v += acc * per;
 	}
 }
 
