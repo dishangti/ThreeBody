@@ -99,14 +99,14 @@ void displays(double time)
 
 bool is_close(int last)
 {
-	for (int i = 0; i < last - 1; i++)
+	for (int i = 0; i < last; i++)
 		if (star[i] == star[last]) return true;
 	return false;
 }
 
 bool is_crashed()
 {
-	for (int i = 1; i < n; i++)
+	for (int i = 0; i < n; i++)
 		if (is_close(i)) return true;
 	return false;
 }
@@ -161,20 +161,20 @@ int main()
 		cin >> star[i].v.x >> star[i].v.y >> star[i].v.z;
 		cout << endl;
 
-		if (is_close(n)) {
+		if (is_close(i)) {
 			cout << "Position cannot be the same or too close!" << endl;
 			return 0;
 		}
 	}
 	
 	per2 = per / 2;		// Reduce calc complexation
-	double interval = per;
-	 for (double now = per; now <= t || interval >= display; now += per)  {
+	 for (double now = per, interval = per; now <= t || interval >= display; now += per, interval += per) {
 		update();
 
 		// Annotate this if you don't want crash detection
 		if (is_crashed()) {
 			cout << "Crashed!" << endl;
+			displays(now);
 			return 0;
 		}
 	 	
@@ -182,7 +182,7 @@ int main()
 			interval = 0;
 			displays(now);
 		}
-		interval += per;
+		
 	}
 	
 	delete[] star;
