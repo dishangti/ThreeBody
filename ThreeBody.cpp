@@ -53,7 +53,7 @@ struct R3 {
 };
 
 struct Body {
-	R3 s, v, a;
+	R3 s, v;
 	double m;
 
 	inline bool operator==(Body s1) {
@@ -64,37 +64,25 @@ struct Body {
 };
 Body *star;
 int n;
-double per, t, display, kper;
+double per, per2, t, display;
 
-void update_a()
+R3 a_func(R3 p, int except)
+// Function of acceleration
+// "except" is the number of the star being calculated
 {
-	R3 init_a;
-	for (int i = 0; i < n; i++) star[i].a = init_a;
-	
-	for (int i = 0; i < n; i++) {
-		for (int j = i + 1; j < n; j++) {
-			R3 ds = star[j].s - star[i].s;
-			double ds2 = ds * ds;
-			double dis = sqrt(ds2);
-			ds *= G / (ds2 * dis);
-			star[i].a += ds * star[j].m;
-			star[j].a += -ds * star[i].m;
-		}
-	}
-}
+	R3 a;
 
-void update_v()
-{
 	for (int i = 0; i < n; i++) {
-		star[i].v += star[i].a * per;
-	}
-}
+		if (i == except) continue;
 
-void update_s()
-{
-	for (int i = 0; i < n; i++) {
-		star[i].s += star[i].v * per + star[i].a * kper;
+		R3 ds = star[i].s - p;
+		double ds2 = ds * ds;
+		double dis = sqrt(ds2);
+		ds *= G / (ds2 * dis);
+		a += ds * star[i].m;
 	}
+
+	return a;
 }
 
 void displays(double time)
@@ -121,6 +109,28 @@ bool is_crashed()
 	for (int i = 1; i < n; i++)
 		if (is_close(i)) return true;
 	return false;
+}
+
+R3 RK4_s(R3 x0, R3 v0, R3 acc)
+// Order-4 Runge-Kutta method for position
+{
+	R3 a_per2 = acc * per2;
+
+	R3 k1 = v0 * 1;							// v1 = v0 + a * dt
+	R3 k2 = v0 + k1 * per2 + a_per2;
+	R3 k3 = v0 + k2 * per2 + a_per2;
+	R3 k4 = v0 + k3 * per + acc * per;
+
+	return x0 + (k1 + k2 * 2 + k3 * 2 + k4) * (per / 6);
+}
+
+void update()
+{
+	for (int i = 0; i < n; i++) {
+		R3 acc = a_func(star[i].s, i);	// Assume "acc" is a constant during each interval
+		star[i].s = RK4_s(star[i].s, star[i].v, acc);
+		star[i].v += acc * per;
+	}
 }
 
 int main()
@@ -157,12 +167,10 @@ int main()
 		}
 	}
 	
-	kper = 0.5 * per * per;		// Reduce calc complexation
+	per2 = per / 2;		// Reduce calc complexation
 	double interval = per;
 	 for (double now = per; now <= t || interval >= display; now += per)  {
-	 	update_a();
-	 	update_s();
-	 	update_v();
+		update();
 
 		// Annotate this if you don't want crash detection
 		if (is_crashed()) {
