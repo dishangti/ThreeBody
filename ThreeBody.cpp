@@ -12,7 +12,7 @@ struct R3 {
 	
 	R3():x(0), y(0), z(0) { }
 	
-	inline R3 operator=(R3 r1) {
+	inline R3 &operator=(const R3 &r1) {
 		x = r1.x; y = r1.y; z = r1.z;
 		return *this;
 	}
@@ -25,15 +25,15 @@ struct R3 {
 		return R3(x * n1, y * n1, z * n1);
 	}
 	
-	inline double operator*(R3 r1) {
+	inline double operator*(const R3 &r1) {
 		return x * r1.x + y * r1.y + z * r1.z;
 	}
 	
-	inline R3 operator+(R3 r1) {
+	inline R3 operator+(const R3 &r1) {
 		return R3(x + r1.x, y + r1.y, z + r1.z);
 	}
 	
-	inline R3 operator-(R3 r1) {
+	inline R3 operator-(const R3 &r1) {
 		return R3(x - r1.x, y - r1.y, z - r1.z);
 	}
 	
@@ -41,12 +41,12 @@ struct R3 {
 		return R3(-x, -y, -z);
 	}
 	
-	inline R3 operator+=(R3 r1) {
+	inline R3 &operator+=(const R3 &r1) {
 		*this = *this + r1;
 		return *this;
 	}
 	
-	inline R3 operator*=(double n1) {
+	inline R3 &operator*=(double n1) {
 		*this = *this * n1;
 		return *this;
 	}
@@ -111,7 +111,7 @@ bool is_crashed()
 	return false;
 }
 
-R3 RK4_s(R3 x0, R3 v0, R3 acc)
+R3 RK4_s(R3 &x0, R3 &v0, R3 &acc)
 // Order-4 Runge-Kutta method for position
 {
 	R3 a_per2 = acc * per2;
