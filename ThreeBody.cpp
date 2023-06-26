@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <utility>
 
 using namespace std;
 const double G = 6.67408e-11;
@@ -50,6 +51,11 @@ struct R3 {
 		*this = *this * n1;
 		return *this;
 	}
+
+	inline R3 &operator/=(double n1) {
+		*this = *this / n1;
+		return *this;
+	}
 };
 
 struct Body {
@@ -63,6 +69,7 @@ struct Body {
 	}
 };
 Body *star;
+pair<R3, R3> *sv_tmp;
 int n;
 double per, per2, t, display;
 
@@ -78,11 +85,44 @@ R3 a_func(R3 p, int except)
 		R3 &&ds = star[i].s - p;
 		double ds2 = ds * ds;
 		double dis = sqrt(ds2);
-		ds *= G / (ds2 * dis);
+		ds /= ds2 * dis;
 		a += ds * star[i].m;
 	}
 
-	return a;
+	return a * G;
+}
+
+pair<R3, R3> RK4(R3 &s0, R3 &v0, int except)
+// Order-4 Runge-Kutta method for velocity and position
+{
+	R3 &&k1v = a_func(s0, except);
+	R3 &&k1s = v0 * per;
+
+	R3 &&k2v = a_func(s0 + k1v * per2, except);
+	R3 &&k2s = (v0 + k1v) * per2;
+
+	R3 &&k3v = a_func(s0 + k2v * per2, except);
+	R3 &&k3s = (v0 + k3v) * per2;
+
+	R3 &&k4v = a_func(s0 + k3v * per, except);
+	R3 &&k4s = (v0 + k4v) * per;
+
+	return pair<R3, R3>(s0 + (k1s + (k2s + k3s) * 2 + k4s) * (per / 6),
+						v0 + (k1v + (k2v + k3v) * 2 + k4v) * (per / 6));
+}
+
+void update()
+{
+	for (int i = 0; i < n; i++) {
+		Body &st = star[i];
+		sv_tmp[i] = RK4(st.s, st.v, i);
+	}
+
+	for (int i = 0; i < n; i++) {
+		Body &st = star[i];
+		st.s = sv_tmp[i].first;
+		st.v = sv_tmp[i].second;
+	}
 }
 
 void displays(double time)
@@ -111,28 +151,6 @@ bool is_crashed()
 	return false;
 }
 
-R3 RK4_ds(R3 &v0, R3 &acc)
-// Order-4 Runge-Kutta method for position
-{
-	R3 &&a_per2 = acc * per2;
-							
-	R3 &&k2 = v0 + v0 * per2 + a_per2;		// k1 = v0
-	R3 &&k3 = v0 + k2 * per2 + a_per2;		// v1 = v0 + a * dt
-	R3 &&k4 = v0 + k3 * per + acc * per;
-
-	return (v0 + k2 * 2 + k3 * 2 + k4) * (per / 6);
-}
-
-void update()
-{
-	for (int i = 0; i < n; i++) {
-		Body &st = star[i];
-		R3 &&acc = a_func(st.s, i);	// Assume "acc" is a constant during each interval
-		st.s = st.s + RK4_ds(st.v, acc);
-		st.v += acc * per;
-	}
-}
-
 int main()
 {
 	cout << "Number of stars: ";
@@ -145,6 +163,7 @@ int main()
 	cin >> display;
 	
 	star = new Body[n];
+	sv_tmp = new pair<R3, R3>[n];
 	if (!star) {
 		cout << "Initializing failed!" << endl;
 		return 0;
