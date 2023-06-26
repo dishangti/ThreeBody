@@ -1,11 +1,15 @@
 #include <iostream>
 #include <cmath>
 #include <utility>
+#include <stdlib>
 
 using namespace std;
 const double G = 6.67408e-11;
 const double MIN_DIS = 1e-6;
 const double MIN_TIME = 1e-6;
+const double RK45_EPS = 1e-6;
+const double RK45_DT_UPPER_BD = 1e-2;
+const double RK45_DT_LOWER_BD = 1e-8;
 
 struct R3 {
 	double x, y, z;
@@ -72,7 +76,7 @@ struct Body {
 Body *star;
 pair<R3, R3> *sv_tmp;
 int n;
-double per, per2;
+double dt = 0.01;
 
 R3 a_func(R3 p, int except)
 // Function of acceleration
@@ -96,20 +100,56 @@ R3 a_func(R3 p, int except)
 pair<R3, R3> RK4(R3 &s0, R3 &v0, int except)
 // Order-4 Runge-Kutta method for velocity and position
 {
-	R3 &&k1v = a_func(s0, except);
-	R3 &&k1s = move(v0);
+	R3 v1z, s1z;
 
-	R3 &&k2v = a_func(s0 + k1s * per2, except);
-	R3 &&k2s = v0 + k1v * per2;
+	while (true) {
+		R3 &&k1v = a_func(s0, except) * dt;
+		R3 &&k1s = v0 * dt;
 
-	R3 &&k3v = a_func(s0 + k2s * per2, except);
-	R3 &&k3s = v0 + k2v * per2;
+		R3 &&k2v = a_func(s0 + k1s * (1.0/4.0), except) * dt;
+		R3 &&k2s = (v0 + k1v * (1.0/4.0)) * dt;
 
-	R3 &&k4v = a_func(s0 + k3s * per, except);
-	R3 &&k4s = v0 + k3v * per;
+		R3 &&k3v = a_func(s0 + k1s * (3.0/32.0) + k2s * (9.0/32.0), except) * dt;
+		R3 &&k3s = (v0 + k1v * (3.0/32.0) + k2v * (9.0/32.0)) * dt;
 
-	return pair<R3, R3>(s0 + (k1s + (k2s + k3s) * 2 + k4s) * (per / 6),
-						v0 + (k1v + (k2v + k3v) * 2 + k4v) * (per / 6));
+		R3 &&k4v = a_func(s0 + k1s * (1932.0/2197.0) - k2s * (7200.0/2197.0) + k3s * (7296.0/2197.0), except) * dt;
+		R3 &&k4s = (v0 + k1v * (1932.0/2197.0) - k2v * (7200.0/2197.0) + k3v * (7296.0/2197.0)) * dt;
+
+		R3 &&k5v = a_func(s0 + k1s * (439.0/216.0) - k2s * 8 + k3s * (3680.0/513.0) - k4s * (845.0/4104.0), except) * dt;
+		R3 &&k5s = (v0 + k1v * (439.0/216.0) - k2v * 8 + k3v * (3680.0/513.0) - k4v * (845.0/4104.0)) * dt;
+
+		R3 &&k6v = a_func(s0 - k1s * (8.0/27.0) + k2s * 2 - k3s * (3544.0/2565.0) + k4s * (1859.0/4104.0) - k5s * (11.0/40.0), except) * dt;
+		R3 &&k6s = (v0 - k1v * (8.0/27.0) + k2v * 2 - k3v * (3544.0/2565.0) + k4v * (1859.0/4104.0) - k5v * (11.0/40.0)) * dt;
+
+		R3 &&v1y = v0 + k1v * (25.0/216.0) + k3v * (1408.0/2565.0) + k4v * (219.0/4104.0) - k5v * (1.0/5.0);
+		R3 &&s1y = s0 + k1s * (25.0/216.0) + k3s * (1408.0/2565.0) + k4s * (2197.0/4104.0) - k5s * (1.0/5.0);
+
+		v1z = v0 + k1v * (16.0/135.0) + k3v * (6656.0/12825.0) + k4v * (28561.0/56430.0) - k5v * (9.0/50.0) + k6v * (2.0/55.0);
+		s1z = s0 + k1s * (16.0/135.0) + k3s * (6656.0/12825.0) + k4s * (28561.0/56430.0) - k5s * (9.0/50.0) + k6s * (2.0/55.0);
+
+		R3 &&v_deps = v1y - v1z; 
+		R3 &&s_deps = s1y - s1z;
+
+		double v_eps = v_deps * v_deps; v_eps = sqrt(v_eps);
+		double s_eps = s_deps * s_deps; s_eps = sqrt(s_eps);
+
+		double v_h = sqrt(sqrt((RK45_EPS / 2.0 / v_eps)));
+		double s_h = sqrt(sqrt((RK45_EPS / 2.0 / s_eps)));
+
+		double n_dt = dt / 2.0 * (v_h + s_h);
+		if (n_dt >= RK45_DT_LOWER_BD && n_dt <= RK45_DT_UPPER_BD) {
+			dt = n_dt;
+		} else if (n_dt < RK45_DT_LOWER_BD) {
+			cout << "Instable solution!"
+			exit(0);
+		}
+			
+		
+		if (v_eps <= RK45_EPS && s_eps <= RK45_EPS)
+			break;
+	}
+
+	return pair<R3, R3>(s1z, v1z);
 }
 
 void update()
@@ -158,8 +198,6 @@ int main()
 
 	cout << "Number of stars: ";
 	cin >> n;
-	cout << "Calculation interval(sec): ";
-	cin >> per;
 	cout << "Finish time(sec): ";
 	cin >> t;
 	cout << "Display interval(sec): ";
@@ -189,9 +227,8 @@ int main()
 		}
 	}
 	
-	per2 = per / 2;		// Reduce calc complexation
-	double now = per, interval = per;
-	for (; now <= t - MIN_TIME; now += per, interval += per) {
+	double now = 0, interval = 0;
+	while (now <= t - MIN_TIME) {
 		update();
 
 		// Annotate this if you don't want crash detection
@@ -201,13 +238,14 @@ int main()
 			return 0;
 		}
 	 	
+		now += dt;
+		interval += dt;
 	 	if (interval >= display - MIN_TIME) {
 			interval = 0;
 			displays(now);
 		}
 		
 	}
-	displays(now);
 
 	delete[] star;
 	delete[] sv_tmp;
