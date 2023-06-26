@@ -5,6 +5,7 @@
 using namespace std;
 const double G = 6.67408e-11;
 const double MIN_DIS = 1e-6;
+const double MIN_TIME = 1e-6;
 
 struct R3 {
 	double x, y, z;
@@ -71,7 +72,7 @@ struct Body {
 Body *star;
 pair<R3, R3> *sv_tmp;
 int n;
-double per, per2, t, display;
+double per, per2;
 
 R3 a_func(R3 p, int except)
 // Function of acceleration
@@ -153,6 +154,8 @@ bool is_crashed()
 
 int main()
 {
+	double t, display;
+
 	cout << "Number of stars: ";
 	cin >> n;
 	cout << "Calculation interval(sec): ";
@@ -187,7 +190,8 @@ int main()
 	}
 	
 	per2 = per / 2;		// Reduce calc complexation
-	 for (double now = per, interval = per; now <= t || interval >= display; now += per, interval += per) {
+	double now = per, interval = per;
+	for (; now <= t - MIN_TIME; now += per, interval += per) {
 		update();
 
 		// Annotate this if you don't want crash detection
@@ -197,13 +201,14 @@ int main()
 			return 0;
 		}
 	 	
-	 	if (interval >= display) {
+	 	if (interval >= display - MIN_TIME) {
 			interval = 0;
 			displays(now);
 		}
 		
 	}
-	
+	displays(now);
+
 	delete[] star;
 	return 0;
 }
