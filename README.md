@@ -16,10 +16,10 @@ Let
 $$f(v) = v,$$
 $$g(s, i) = \mathrm{G}\cdot\sum _{j\not=i}\frac{s_j-s_i}{\lvert s_j-s_i \rvert}\cdot m_j.$$
 By order-4 Runge-Kutta method, we have
-$$k^{(v_i)}_1 = f(v_i^{(n)}),\; k^{(s_i)}_1 = g(s_i^{(n)}, i);$$
-$$k^{(v_i)}_2 = f(v_i^{(n)}+k^{(v_i)}_1 \cdot\frac{\Delta t}{2}),\; k^{(s_i)}_2 = g(s_i^{(n)} + k^{(v_i)}_1 \cdot \frac{\Delta t}{2}, i);$$
-$$k^{(v_i)}_3 = f(v_i^{(n)}+k^{(v_i)}_2 \cdot\frac{\Delta t}{2}),\; k^{(s_i)}_3 = g(s_i^{(n)} + k^{(v_i)}_2 \cdot \frac{\Delta t}{2}, i);$$
-$$k^{(v_i)}_4 = f(v_i^{(n)}+k^{(v_i)}_3 \cdot\Delta t),\; k^{(s_i)}_4 = g(s_i^{(n)} + k^{(v_i)}_3 \cdot \Delta t, i).$$
+$$k^{(v_i)}_1 = f(v_i^{(n)}), \ k^{(s_i)}_1 = g(s_i^{(n)}, i);$$
+$$k^{(v_i)}_2 = f(v_i^{(n)}+k^{(v_i)}_1 \cdot\frac{\Delta t}{2}),\ k^{(s_i)}_2 = g(s_i^{(n)} + k^{(v_i)}_1 \cdot \frac{\Delta t}{2}, i);$$
+$$k^{(v_i)}_3 = f(v_i^{(n)}+k^{(v_i)}_2 \cdot\frac{\Delta t}{2}),\ k^{(s_i)}_3 = g(s_i^{(n)} + k^{(v_i)}_2 \cdot \frac{\Delta t}{2}, i);$$
+$$k^{(v_i)}_4 = f(v_i^{(n)}+k^{(v_i)}_3 \cdot\Delta t),\ k^{(s_i)}_4 = g(s_i^{(n)} + k^{(v_i)}_3 \cdot \Delta t, i).$$
 Finally we get the approximate position and velocity at $t + \Delta t$
 $$v^{(n+1)}_i = \frac{\Delta t}{6}(k^{(v_i)}_1 + 2k^{(v_i)}_2 + k^{(v_i)}_3 + k^{(v_i)}_4)$$
 $$s^{(n+1)}_i = \frac{\Delta t}{6}(k^{(s_i)}_1 + 2k^{(s_i)}_2 + k^{(s_i)}_3 + k^{(s_i)}_4)$$
