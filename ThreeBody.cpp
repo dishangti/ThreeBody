@@ -99,13 +99,13 @@ pair<R3, R3> RK4(R3 &s0, R3 &v0, int except)
 	R3 &&k1v = a_func(s0, except);
 	R3 &&k1s = move(v0);
 
-	R3 &&k2v = a_func(s0 + k1v * per2, except);
+	R3 &&k2v = a_func(s0 + k1s * per2, except);
 	R3 &&k2s = v0 + k1v * per2;
 
-	R3 &&k3v = a_func(s0 + k2v * per2, except);
+	R3 &&k3v = a_func(s0 + k2s * per2, except);
 	R3 &&k3s = v0 + k2v * per2;
 
-	R3 &&k4v = a_func(s0 + k3v * per, except);
+	R3 &&k4v = a_func(s0 + k3s * per, except);
 	R3 &&k4s = v0 + k3v * per;
 
 	return pair<R3, R3>(s0 + (k1s + (k2s + k3s) * 2 + k4s) * (per / 6),
