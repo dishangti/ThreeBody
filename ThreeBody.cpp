@@ -167,7 +167,7 @@ int main()
 	
 	star = new Body[n];
 	sv_tmp = new pair<R3, R3>[n];
-	if (!star) {
+	if (!star || !sv_tmp) {
 		cout << "Initializing failed!" << endl;
 		return 0;
 	}
@@ -210,5 +210,6 @@ int main()
 	displays(now);
 
 	delete[] star;
+	delete[] sv_tmp;
 	return 0;
 }
