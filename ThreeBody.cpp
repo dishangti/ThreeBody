@@ -97,7 +97,7 @@ R3 a_func(R3 p, int except)
 	return a * G;
 }
 
-pair<R3, R3> RK4(R3 &s0, R3 &v0, int except)
+pair<R3, R3> RKF45(R3 &s0, R3 &v0, int except)
 // Order-4 Runge-Kutta method for velocity and position
 {
 	R3 v1z, s1z;
@@ -156,7 +156,7 @@ void update()
 {
 	for (int i = 0; i < n; i++) {
 		Body &st = star[i];
-		sv_tmp[i] = RK4(st.s, st.v, i);
+		sv_tmp[i] = RKF45(st.s, st.v, i);
 	}
 
 	for (int i = 0; i < n; i++) {
