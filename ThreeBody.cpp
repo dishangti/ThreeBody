@@ -127,16 +127,13 @@ pair<R3, R3> RKF45(R3 &s0, R3 &v0, int except)
 		v1z = v0 + k1v * (16.0/135.0) + k3v * (6656.0/12825.0) + k4v * (28561.0/56430.0) - k5v * (9.0/50.0) + k6v * (2.0/55.0);
 		s1z = s0 + k1s * (16.0/135.0) + k3s * (6656.0/12825.0) + k4s * (28561.0/56430.0) - k5s * (9.0/50.0) + k6s * (2.0/55.0);
 
-		R3 &&v_deps = v1y - v1z; 
 		R3 &&s_deps = s1y - s1z;
 
-		double v_eps = v_deps * v_deps; v_eps = sqrt(v_eps);
 		double s_eps = s_deps * s_deps; s_eps = sqrt(s_eps);
 
-		double v_h = sqrt(sqrt((RK45_EPS / 2.0 / v_eps)));
 		double s_h = sqrt(sqrt((RK45_EPS / 2.0 / s_eps)));
 
-		double n_dt = dt / 2.0 * (v_h + s_h);
+		double n_dt = dt / 2.0 * s_h;
 		if (n_dt >= RK45_DT_LOWER_BD && n_dt <= RK45_DT_UPPER_BD) {
 			dt = n_dt;
 		} else if (n_dt < RK45_DT_LOWER_BD) {
@@ -145,7 +142,7 @@ pair<R3, R3> RKF45(R3 &s0, R3 &v0, int except)
 		}
 			
 		
-		if (v_eps <= RK45_EPS && s_eps <= RK45_EPS)
+		if (s_eps <= RK45_EPS)
 			break;
 	}
 
