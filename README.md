@@ -1,7 +1,7 @@
 # ThreeBody
 A n-body problem solver with Runge-Kutta-Fehlberg method (RKF45).
 
-## RK4 Model
+## RK4 Method
 Assume there are $n$ stars in $\mathbb{R}^3$ space, with mass $m_i$, position $s_i$ and and velocity $v_i$ respectively.
 
 By Newton's laws, we have
@@ -24,8 +24,8 @@ Finally we get the approximate position and velocity at $t + \Delta t$
 $$v^{(n+1)}_i = \frac{\Delta t}{6}(k^{(v_i)}_1 + 2k^{(v_i)}_2 + 2k^{(v_i)}_3 + k^{(v_i)}_4)$$
 $$s^{(n+1)}_i = \frac{\Delta t}{6}(k^{(s_i)}_1 + 2k^{(s_i)}_2 + 2k^{(s_i)}_3 + k^{(s_i)}_4)$$
 
-## RKF45 Model
-It is similar to RK4, but with adaptive step length adjustment.
+## RKF45 Method
+It is similar to RK4 method, but with adaptive step length adjustment.
 
 ## Related Material
 OJ problem and solution motivation: [洛谷 P3945 三体问题](https://www.luogu.com.cn/problem/P3945)
