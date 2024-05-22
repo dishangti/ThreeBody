@@ -1,5 +1,5 @@
 # ThreeBody
-A n-body problem solver with Runge-Kutta-Fehlberg method (RKF45).
+An n-body problem solver with Runge-Kutta-Fehlberg method (RKF45).
 
 ## RK4 Method
 Assume there are $n$ stars in $\mathbb{R}^3$ space, with mass $m_i$, position $s_i$ and and velocity $v_i$ respectively.
